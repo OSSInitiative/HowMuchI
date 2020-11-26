@@ -5,6 +5,7 @@
         "@reach/router": "1.3.4",
         "@types/react": "^17.0.0",
         "@types/react-native": "^0.63.36",
+        "numeral": "^2.0.6",
         "react": "16.13.1",
         "react-art": "16.13.1",
         "react-dom": "16.13.1",
@@ -17,9 +18,16 @@
         "renative": "0.31.3"
     },
     "devDependencies": {
-        "rnv": "0.31.3",
-        "renative-template-hello-world": "0.31.3",
+        "@rnv/engine-rn-web": "0.31.3",
+        "@types/numeral": "0.0.28",
+        "gh-pages": "^3.1.0",
         "renative-template-blank": "0.31.3",
-        "@rnv/engine-rn-web": "0.31.3"
+        "renative-template-hello-world": "0.31.3",
+        "rnv": "0.31.3"
+    },
+    "scripts": {
+        "start": "rnv run -p web",
+        "prepublish": "rnv build -p web",
+        "publish": "rnv build -p web"
     }
 }

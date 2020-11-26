@@ -96,7 +96,7 @@ const Menu = (props) => {
         }, []);
     }
 
-    const active = ROUTES.EARN;
+    const active = props.currentRoute;
 
     return (
         <View style={styles.container}>

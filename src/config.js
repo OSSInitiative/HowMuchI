@@ -17,6 +17,7 @@ export const hasWebFocusableUI = isEngineWeb && isFactorTv;
 console.disableYellowBox = true; // eslint-disable-line no-console
 
 const theme = {
+    backgroundColor: '#0E1317',
     navBackColor: '#1b262e',
     navBottomBorderColor: '#354652',
     color2: '#62DBFB',
