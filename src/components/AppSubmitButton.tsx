@@ -9,6 +9,9 @@ export interface AppSubmitButtonProps {
 
     text: string;
 
+
+    onSubmit(): void;
+
 }
 
 const styles = StyleSheet.create({
@@ -41,10 +44,10 @@ export function AppSubmitButton(props: AppSubmitButtonProps) {
             style={props.styles ? [styles.button, props.styles] : styles.button}
             textStyle={styles.buttonText}
             onPress={() => {
-                
+                props.onSubmit();
             }}
             onEnterPress={() => {
-                
+                props.onSubmit();
             }}
         />
     );

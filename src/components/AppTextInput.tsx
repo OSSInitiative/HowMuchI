@@ -16,6 +16,7 @@ export interface TextInputProps {
 
 const styles = StyleSheet.create({
     container: {
+        width: '100%',
         border: '2px solid #5d5d5d',
         borderRadius: getScaledValue(5),
         minHeight: getScaledValue(20),

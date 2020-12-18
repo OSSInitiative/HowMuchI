@@ -17,10 +17,13 @@ export interface AppDropDownProps {
     values?: (string | ItemInfo)[];
     defaultValue?: any;
 
+    onValueChagne(value: string): void;
+
 }
 
 const styles = StyleSheet.create({
     container: {
+        width: '100%',
         border: '2px solid #5d5d5d',
         borderRadius: getScaledValue(5),
         minHeight: getScaledValue(20),

@@ -5,6 +5,7 @@ import { Text, View, Image } from 'react-native';
 import { Icon, Button, getScaledValue, useNavigate, useOpenDrawer, StyleSheet } from 'renative';
 import { initNavigation, withFocusable } from '@noriginmedia/react-spatial-navigation';
 import Theme, { themeStyles, hasHorizontalMenu, hasWebFocusableUI, ROUTES, ICON_LOGO } from '../config';
+import { useServices } from '../state/Services';
 
 if (hasWebFocusableUI) {
     initNavigation({
@@ -96,6 +97,8 @@ const Menu = (props) => {
         }, []);
     }
 
+    const services = useServices();
+
     const active = props.currentRoute;
 
     return (
@@ -109,7 +112,11 @@ const Menu = (props) => {
             </View>
 
             <View style={styles.navContainer}>
-                <Text style={styles.howMuchIText}>
+                <Text
+                    style={styles.howMuchIText}
+                    onPress={() => {
+                        services.navigate(ROUTES.HOME);
+                    }}>
                     How Much I
                 </Text>
 
@@ -120,10 +127,10 @@ const Menu = (props) => {
                     style={styles.button}
                     textStyle={active == ROUTES.LOST ? styles.buttonActiveText : styles.buttonText}
                     onPress={() => {
-                        navigate(ROUTES.LOST, '/[slug]');
+                        services.navigate(ROUTES.LOST, 'Lost');
                     }}
                     onEnterPress={() => {
-                        navigate(ROUTES.LOST, '/[slug]');
+                        services.navigate(ROUTES.LOST, 'Lost');
                     }}
                 />
                 <Button
@@ -132,10 +139,10 @@ const Menu = (props) => {
                     style={styles.button}
                     textStyle={active == ROUTES.EARN ? styles.buttonActiveText : styles.buttonText}
                     onPress={() => {
-                        navigate(ROUTES.EARN, '/[slug]');
+                        services.navigate(ROUTES.EARN, 'Earn');
                     }}
                     onEnterPress={() => {
-                        navigate(ROUTES.EARN, '/[slug]');
+                        services.navigate(ROUTES.EARN, 'Earn');
                     }}
                 />
             </View>
