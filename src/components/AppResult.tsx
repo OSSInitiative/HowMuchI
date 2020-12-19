@@ -33,15 +33,30 @@ const styles = StyleSheet.create({
         marginTop: getScaledValue(70),
         marginBottom: getScaledValue(10),
     },
-    inputTitle: {
-        color: '#999',
+    value1: {
+        color: '#2adb7c',
+        fontSize: getScaledValue(40),
+        marginTop: getScaledValue(40),
+    },
+    value2: {
+        color: '#2adb7c',
         fontSize: getScaledValue(15),
+        marginTop: getScaledValue(15),
+        marginBottom: getScaledValue(10),
+    },
+    txt1: {
+        color: '#abacad',
+        fontSize: getScaledValue(25),
         marginTop: getScaledValue(40),
         marginBottom: getScaledValue(10),
     },
-    input: {
-        width: getScaledValue(400),
+    txt2: {
+        color: '#abacad',
+        fontSize: getScaledValue(25),
+        marginTop: getScaledValue(10),
+        marginBottom: getScaledValue(10),
     },
+    
     submitButton: {
         marginTop: getScaledValue(60),
     }
@@ -58,13 +73,13 @@ export function AppResult(props: AppResultProps) {
             </View>
 
             <View>
-                <Text>{props.value1}</Text>
-                <Text>{props.value2}</Text>
+                <Text style={styles.value1}>{props.value1}</Text>
+                <Text style={styles.value2}>{props.value2}</Text>
             </View>
 
             <View>
-                <Text>{props.txt1}</Text>
-                <Text>{props.txt2}</Text>
+                <Text style={styles.txt1}>{props.txt1}</Text>
+                <Text style={styles.txt2}>{props.txt2}</Text>
             </View>
 
             {props.showClose &&

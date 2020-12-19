@@ -10,17 +10,6 @@ export interface ItemInfo {
 
 }
 
-export interface AppDropDownProps {
-
-    styles?: CSSProperties,
-
-    values?: (string | ItemInfo)[];
-    defaultValue?: any;
-
-    onValueChagne(value: string): void;
-
-}
-
 const styles = StyleSheet.create({
     container: {
         width: '100%',
@@ -77,11 +66,38 @@ const styles = StyleSheet.create({
 });
 
 
-export class AppDropDown extends Component<AppDropDownProps> {
+export interface AppDropDownProps {
+
+    styles?: CSSProperties,
+
+    values?: (string | ItemInfo)[];
+    defaultValue?: any;
+
+    onValueChagne(value: string): void;
+
+}
+
+export interface AppDropDownState {
+
+    selectedcat: (string | ItemInfo)[];
+    category?: (string | ItemInfo)[];
+
+}
+
+
+export class AppDropDown extends Component<AppDropDownProps, AppDropDownState> {
     state = {
         selectedcat: this.props.defaultValue,
         category: this.props.values
     };
+
+    componentDidUpdate(prevProps: AppDropDownProps, prevState: AppDropDownState) {
+        if (prevProps.values != this.props.values) {
+            this.setState({
+                category: this.props.values
+            });
+        }
+    }
 
     async onValueChangeCat(value) {
         this.setState({ selectedcat: value });

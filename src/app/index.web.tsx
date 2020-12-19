@@ -8,6 +8,7 @@ import { ScreenLost } from '../pages/ScreenLost';
 import { ScreenEarn } from '../pages/ScreenEarn';
 import { ServicesContext, Services } from '../state/Services';
 import queryString from 'query-string';
+import { Currencies, CurrencyInfo } from '../Converter';
 
 class ServicesImpl implements Services {
 
@@ -17,14 +18,62 @@ class ServicesImpl implements Services {
         this.app = app;
     }
 
-    navigate(route: string, titleName?: string, queryParameters?: Record<string, string>) {
+
+    getCurrencies(): Promise<CurrencyInfo[]> {
+        return Promise.resolve(Currencies);
+    }
+
+    updateStateVariables(variables: Record<string, string>) {
+        if (document) {
+
+            const queryParameters = queryString.parse(document.location.search);
+
+            const pg = queryParameters.page ?? queryParameters['?page'] ?? ROUTES.HOME;
+
+            for (const key in queryParameters) {
+                if (key.startsWith('?')) {
+                    
+                    const nkey = key.substring(1);
+
+                    queryParameters[nkey] = queryParameters[key];
+
+                    delete queryParameters[key];
+                }
+            }
+
+            const newParams = {...queryParameters, ...variables};
+
+            let searchValue = '?';
+            if (newParams) {
+                for (const key in newParams) {
+                    if (newParams.hasOwnProperty(key)) {
+                        let value = newParams[key];
+
+                        if (value) {
+                            searchValue += '&' + value;
+                        }
+                    }
+                }
+            }
+
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + searchValue;
+            window.history.pushState(
+                { path: newUrl },
+                document.title,
+                newUrl
+            );
+
+        }
+    }
+
+    navigate(route: string, titleName?: string, variables?: Record<string, string>) {
 
         if (document) {
             let searchValue = `?page=${route}`;
-            if (queryParameters) {
-                for (const key in queryParameters) {
-                    if (queryParameters.hasOwnProperty(key)) {
-                        let value = queryParameters[key];
+            if (variables) {
+                for (const key in variables) {
+                    if (variables.hasOwnProperty(key)) {
+                        let value = variables[key];
 
                         if (value) {
                             if (searchValue.startsWith('?')) {
@@ -129,7 +178,7 @@ export default class App extends Component<AppProps, AppState> {
                     <View>
 
                         <Component
-                            queryParameters
+                            variables={queryParameters}
                         />
                     </View>
                 </View>

@@ -4,12 +4,29 @@ import { Icon, Button, getScaledValue, StyleSheet } from 'renative';
 import { AppTextInput } from '../components/AppTextInput';
 import { AppDropDown } from '../components/AppDropDown';
 import { AppSubmitButton } from '../components/AppSubmitButton';
-import { ServicesContext } from '../state/Services';
+import { ServicesContext, useServices } from '../state/Services';
 import { AppResult } from '../components/AppResult';
+import { CurrencyInfo } from '../Converter';
+
+
+
+type QueryParametersSchema = {
+
+    action: 'showResult' | any;
+
+    currency: string;
+    v1: string;
+    v2: string;
+
+};
+
 
 export interface ScreenEarnProps {
 
     path: string;
+
+
+    variables: QueryParametersSchema;
 
 }
 
@@ -44,6 +61,8 @@ interface ScreenEarnState {
 
     showingResults: boolean;
 
+    currencies: CurrencyInfo[];
+
     currency: string;
 
     firstCurrency: string;
@@ -51,6 +70,8 @@ interface ScreenEarnState {
 
 }
 
+const f = (a: any, b: any) => [].concat(...a.map(d => b.map(e => [].concat(d, e))));
+const cartesian = (a: any, b?: any, ...c: any) => (b ? cartesian(f(a, b), ...c) : a);
 
 export class ScreenEarn extends Component<ScreenEarnProps, ScreenEarnState> {
 
@@ -60,15 +81,27 @@ export class ScreenEarn extends Component<ScreenEarnProps, ScreenEarnState> {
     constructor(props: ScreenEarnProps) {
         super(props);
 
-        this.state = {
-            showingResults: false,
+        this.renderCalculator = this.renderCalculator.bind(this);
+        this.renderResult = this.renderResult.bind(this);
 
-            currency: 'USC',
-            firstCurrency: '0',
-            secondCurrency: '0',
+        this.state = {
+            showingResults: props.variables.action === 'showResult',
+
+            currencies: [],
+
+            currency: props.variables.currency,
+            firstCurrency: props.variables.v1,
+            secondCurrency: props.variables.v2,
         };
     }
 
+
+    async componentDidMount() {
+        const currencies = await this.context.getCurrencies();
+        this.setState({
+            currencies: currencies
+        });
+    }
 
 
     calculate() {
@@ -99,9 +132,9 @@ export class ScreenEarn extends Component<ScreenEarnProps, ScreenEarnState> {
             </View>
         );
     }
-
-
+    
     renderCalculator() {
+        console.log(this.state.currencies);
         return (
             <View>
                 <Text style={styles.titleText}>How Much I Earn</Text>
@@ -109,10 +142,15 @@ export class ScreenEarn extends Component<ScreenEarnProps, ScreenEarnState> {
                 <Text style={styles.inputTitle}>Currency</Text>
                 <AppDropDown
                     styles={styles.input}
-                    values={[
-                        'BTC-USD',
-                        'test'
-                    ]}
+                    values={
+                        (this.state.currencies &&
+                        this.state.currencies.length > 1 &&
+                        cartesian(this.state.currencies, this.state.currencies)
+                        .map((c: [left: CurrencyInfo, right: CurrencyInfo]) => {
+                            const [left, right] = c;
+                            return left.symbol + '-' + right.symbol;
+                        })) || ['INVALID']
+                    }
                     defaultValue='BTC-USD'
                     onValueChagne={(text) => this.setState({
                         currency: text
