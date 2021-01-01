@@ -23,7 +23,8 @@ const styles = StyleSheet.create({
         paddingVertical: getScaledValue(10),
         paddingHorizontal: getScaledValue(15),
         flex: 1,
-        flexDirection: 'row'
+        flexDirection: 'row',
+        alignItems: 'center'
     },
     suffix: {
         color: '#aaa',

@@ -8,20 +8,23 @@ import { ScreenLost } from '../pages/ScreenLost';
 import { ScreenEarn } from '../pages/ScreenEarn';
 import { ServicesContext, Services } from '../state/Services';
 import queryString from 'query-string';
-import { Currencies, CurrencyInfo } from '../Converter';
+import { CurrencyInfo } from '../models/CurrencyInfo';
+import { CurrencyService, ICurrencyService } from '../services/CurrencyService';
 
 class ServicesImpl implements Services {
 
     private app: App;
+    private currencyService: ICurrencyService;
 
     constructor(app: App) {
         this.app = app;
+        this.currencyService = new CurrencyService();
+    }
+    
+    getCurrencyService(): ICurrencyService {
+        return this.currencyService;
     }
 
-
-    getCurrencies(): Promise<CurrencyInfo[]> {
-        return Promise.resolve(Currencies);
-    }
 
     updateStateVariables(variables: Record<string, string>) {
         if (document) {
@@ -41,16 +44,18 @@ class ServicesImpl implements Services {
                 }
             }
 
+            delete queryParameters['page'];
+
             const newParams = {...queryParameters, ...variables};
 
-            let searchValue = '?';
+            let searchValue = '?page=' + pg;
             if (newParams) {
                 for (const key in newParams) {
                     if (newParams.hasOwnProperty(key)) {
                         let value = newParams[key];
 
                         if (value) {
-                            searchValue += '&' + value;
+                            searchValue += '&' + key + '=' + value;
                         }
                     }
                 }

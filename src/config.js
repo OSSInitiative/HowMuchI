@@ -2,8 +2,13 @@ import { getScaledValue, isEngineWeb, isFactorMobile, isFactorDesktop,
     isFactorTv, isEngineNative, isFactorBrowser, registerServiceWorker, StyleSheet } from 'renative';
 import '../platformAssets/runtime/fontManager'; // eslint-disable-line import/extensions, import/no-unresolved
 
-export CONFIG from '../platformAssets/renative.runtime.json'; // eslint-disable-line import/no-unresolved
-export ICON_LOGO from '../platformAssets/runtime/logo.png'; // eslint-disable-line import/no-unresolved
+import CONFIG from '../platformAssets/renative.runtime.json'; // eslint-disable-line import/no-unresolved
+import ICON_LOGO from '../platformAssets/runtime/logo.png'; // eslint-disable-line import/no-unresolved
+
+export {
+    CONFIG,
+    ICON_LOGO
+};
 
 if (isFactorBrowser) registerServiceWorker();
 

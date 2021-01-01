@@ -6,7 +6,8 @@ import { AppDropDown } from '../components/AppDropDown';
 import { AppSubmitButton } from '../components/AppSubmitButton';
 import { ServicesContext, useServices } from '../state/Services';
 import { AppResult } from '../components/AppResult';
-import { CurrencyInfo } from '../Converter';
+import { CurrencyInfo, getCurrencyPermutations } from '../models/CurrencyInfo';
+import { ICurrencyService } from '../services/CurrencyService';
 
 
 
@@ -41,13 +42,30 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: getScaledValue(60),
         marginTop: getScaledValue(70),
-        marginBottom: getScaledValue(10),
+        marginBottom: getScaledValue(60),
     },
     inputTitle: {
         color: '#999',
         fontSize: getScaledValue(15),
-        marginTop: getScaledValue(40),
         marginBottom: getScaledValue(10),
+    },
+    item: {
+        height: getScaledValue(85),
+        //backgroundColor: 'red',
+    },
+    separator: {
+        height: getScaledValue(50),
+        minHeight: getScaledValue(50),
+    },
+    exchangeInfoView: {
+    },
+    exchangeInfo: {
+        color: '#999',
+        fontSize: getScaledValue(15),
+        marginTop: getScaledValue(10),
+        //marginBottom: getScaledValue(10),
+        marginLeft: getScaledValue(20),
+        textAlign: 'left'
     },
     input: {
         //width: getScaledValue(400),
@@ -68,14 +86,19 @@ interface ScreenEarnState {
     firstCurrency: string;
     secondCurrency: string;
 
-}
 
-const f = (a: any, b: any) => [].concat(...a.map(d => b.map(e => [].concat(d, e))));
-const cartesian = (a: any, b?: any, ...c: any) => (b ? cartesian(f(a, b), ...c) : a);
+
+    earn: number;
+
+    currentWorth: number;
+
+}
 
 export class ScreenEarn extends Component<ScreenEarnProps, ScreenEarnState> {
 
     static contextType = ServicesContext;
+
+    private currencyService: ICurrencyService;
 
 
     constructor(props: ScreenEarnProps) {
@@ -89,26 +112,64 @@ export class ScreenEarn extends Component<ScreenEarnProps, ScreenEarnState> {
 
             currencies: [],
 
-            currency: props.variables.currency,
+            currency: props.variables.currency || 'USD',
             firstCurrency: props.variables.v1,
             secondCurrency: props.variables.v2,
+
+            currentWorth: 0,
+            earn: 0,
+
+            ...props.variables
         };
+
     }
 
 
-    async componentDidMount() {
-        const currencies = await this.context.getCurrencies();
-        this.setState({
-            currencies: currencies
+    componentDidMount() {
+
+        this.currencyService = this.context.getCurrencyService();
+
+        const abort = new AbortController();
+
+        const liveObservable = this.currencyService.getLiveCurrencyInfo(abort.signal);
+
+        liveObservable.subscribe(currencies => {
+            this.setState({
+                currencies: currencies
+            });
         });
+
     }
 
 
     calculate() {
+
+        const [from, to] = this.parseCurrencyValue();
+
+        const toPrice = this.currencyService.getExchangeRate(from, to, 1);
+
+        const fromValue = parseFloat(this.state.firstCurrency);
+        const toValue = parseFloat(this.state.secondCurrency);
+
+        const earn = (toPrice - toValue) * fromValue;
+        const currentWorth = fromValue - ((fromValue * toValue) / toPrice);
+
+        const state = {
+
+            earn,
+            currentWorth,
+
+            showingResults: !this.state.showingResults,
+
+
+        } as Partial<ScreenEarnState>;
+
+        this.context.updateStateVariables(state);
+
         this.setState(prev => ({
             ...prev,
-            showingResults: !prev.showingResults
-        }))
+            ...state
+        }));
     }
 
 
@@ -132,52 +193,83 @@ export class ScreenEarn extends Component<ScreenEarnProps, ScreenEarnState> {
             </View>
         );
     }
-    
+
+    parseCurrencyValue(): [from: string, to: string] {
+        if (!this.state.currency) {
+            return ['BTC', 'USD'];
+        }
+
+        const parts = this.state.currency.split('-');
+
+        if (parts.length != 2) {
+            return ['BTC', 'USD'];
+        }
+
+        return [parts[0], parts[1]];
+    }
+
     renderCalculator() {
-        console.log(this.state.currencies);
+
+        const [from, to] = this.parseCurrencyValue();
+
         return (
             <View>
                 <Text style={styles.titleText}>How Much I Earn</Text>
 
-                <Text style={styles.inputTitle}>Currency</Text>
-                <AppDropDown
-                    styles={styles.input}
-                    values={
-                        (this.state.currencies &&
-                        this.state.currencies.length > 1 &&
-                        cartesian(this.state.currencies, this.state.currencies)
-                        .map((c: [left: CurrencyInfo, right: CurrencyInfo]) => {
-                            const [left, right] = c;
-                            return left.symbol + '-' + right.symbol;
-                        })) || ['INVALID']
-                    }
-                    defaultValue='BTC-USD'
-                    onValueChagne={(text) => this.setState({
-                        currency: text
-                    })}
-                />
+                <View style={styles.item}>
+                    <Text style={styles.inputTitle}>Currency</Text>
+                    <AppDropDown
+                        styles={styles.input}
+                        values={
+                            (
+                                this.state.currencies &&
+                                this.state.currencies.length > 1 &&
+                                getCurrencyPermutations(this.state.currencies) ||
+                                ['INVALID']
+                            )
+                        }
+                        defaultValue='BTC-USD'
+                        onValueChange={(text) => this.setState({
+                            currency: text
+                        }, () => console.log('changed!'))}
+                    />
+                </View>
 
-                <Text></Text>
 
-                <Text style={styles.inputTitle}>Sold Price</Text>
-                <AppTextInput
-                    text='0'
-                    suffix='USD'
-                    styles={styles.input}
-                    onValueChange={(text) => this.setState({
-                        firstCurrency: text
-                    })}
-                />
+                <View style={styles.separator}>
+                    <Text style={styles.exchangeInfo}>
+                        {
+                            this.currencyService && ('Price:  1 ' + from + ' is ' + this.currencyService.getExchangeRate(from, to, 1) + ' ' + to)
+                        }
+                    </Text>
+                </View>
 
-                <Text style={styles.inputTitle}>How much you sold?</Text>
-                <AppTextInput
-                    text='0.0'
-                    suffix='BTC'
-                    styles={styles.input}
-                    onValueChange={(text) => this.setState({
-                        secondCurrency: text
-                    })}
-                />
+
+                <View style={styles.item}>
+                    <Text style={styles.inputTitle}>Sold Price</Text>
+                    <AppTextInput
+                        text={this.state.currencies.find(c => c.code == to)?.format ?? '0'}
+                        suffix={to}
+                        styles={styles.input}
+                        onValueChange={(text) => this.setState({
+                            firstCurrency: text
+                        })}
+                    />
+                </View>
+
+                <View style={styles.separator} />
+
+                <View style={styles.item}>
+                    <Text style={styles.inputTitle}>How much you sold?</Text>
+                    <AppTextInput
+                        text={this.state.currencies.find(c => c.code == from)?.format ?? '0'}
+                        suffix={from}
+                        styles={styles.input}
+                        onValueChange={(text) => this.setState({
+                            secondCurrency: text
+                        })}
+                    />
+                </View>
             </View>
         )
     }
@@ -186,10 +278,10 @@ export class ScreenEarn extends Component<ScreenEarnProps, ScreenEarnState> {
         return (
             <AppResult
                 title='You Earn'
-                value1='$33.33'
-                value2='0.0018 BTC'
+                value1={this.state.firstCurrency}
+                value2={this.state.secondCurrency}
                 txt1='You can now buy'
-                txt2='0.0139 BTC'
+                txt2={(this.state.currentWorth || 0).toString()}
                 showClose={false}
                 close={() => this.setState({
                     showingResults: false

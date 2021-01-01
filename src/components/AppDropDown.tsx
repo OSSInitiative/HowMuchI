@@ -73,7 +73,7 @@ export interface AppDropDownProps {
     values?: (string | ItemInfo)[];
     defaultValue?: any;
 
-    onValueChagne(value: string): void;
+    onValueChange(value: string): void;
 
 }
 
@@ -101,6 +101,7 @@ export class AppDropDown extends Component<AppDropDownProps, AppDropDownState> {
 
     async onValueChangeCat(value) {
         this.setState({ selectedcat: value });
+        this.props.onValueChange(value);
     }
 
     render() {
